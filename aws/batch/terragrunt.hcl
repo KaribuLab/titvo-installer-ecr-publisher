@@ -35,7 +35,7 @@ inputs = {
   ]
   name               = local.batch_name
   common_tags        = local.common_tags
-  ecr_repository_url = "karibu/titvo-installer-ecr-publisher:latest"
+  ecr_repository_url = "karibu/titvo-installer-ecr-publisher"
   max_vcpus          = 16
   job_vcpu           = 2
   job_memory         = 4096
