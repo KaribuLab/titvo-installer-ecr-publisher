@@ -1,0 +1,35 @@
+# Archivos de entorno
+.env
+
+# Entorno virtual
+venv/
+env/
+ENV/
+
+# Archivos de caché de Python
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Distribución / empaquetado
+dist/
+build/
+*.egg-info/
+
+# Archivos de IDE
+.idea/
+*.swp
+*.swo 
+
+# Archivos de descarga
+repo_files/
+
+*.log
+
+templates/*.html
+!templates/report_template.html
+
+common_tags.json
+
+.terragrunt-cache/
+.terraform.lock.hcl

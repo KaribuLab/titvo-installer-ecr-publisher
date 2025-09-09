@@ -1,0 +1,8 @@
+.env
+.gitignore
+LICENSE
+*.hcl
+aws
+.github
+README.md
+.git
