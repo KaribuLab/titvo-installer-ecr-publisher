@@ -12,9 +12,9 @@ DOCKERFILE=${DOCKERFILE:-Dockerfile}
 IMAGE_TAG=${IMAGE_TAG:-latest}
 
 echo "==> Params"
-echo "GIT_URL=${GIT_URL:-}"
-echo "IMAGE_REPO=${IMAGE_REPO:-}"
-echo "GIT_REF=${GIT_REF:-main}"
+echo "GIT_URL=${GIT_URL}"
+echo "IMAGE_REPO=${IMAGE_REPO}"
+echo "GIT_REF=${GIT_REF}"
 echo "CONTEXT_PATH=${CONTEXT_PATH}"
 echo "DOCKERFILE=${DOCKERFILE}"
 echo "IMAGE_TAG=${IMAGE_TAG}"
@@ -45,8 +45,8 @@ SRC="$WORK/src"
 echo "==> Clonando repo"
 git clone --depth 1 --branch "$GIT_REF" "$GIT_URL" "$SRC"
 
-CONTEXT="${SRC}/${CONTEXT_PATH:-.}"
-DOCKERFILE_PATH="${CONTEXT}/${DOCKERFILE:-Dockerfile}"
+CONTEXT="${SRC}/${CONTEXT_PATH}"
+DOCKERFILE_PATH="${CONTEXT}/${DOCKERFILE}"
 [[ -f "$DOCKERFILE_PATH" ]] || { echo "ERROR: $DOCKERFILE_PATH not found"; exit 5; }
 
 DEST_IMAGE="${REGISTRY_URL}/${IMAGE_REPO}:${IMAGE_TAG}"
@@ -67,52 +67,27 @@ echo "{
 
 chmod 600 ~/.docker/config.json
 
-echo "==> BuildKit daemonless → ${DEST_IMAGE}"
-BK_ARGS=( build
-  --frontend=dockerfile.v0
-  --local "context=${CONTEXT}"
-  --local "dockerfile=${CONTEXT}"
-  --opt "filename=$(basename "$DOCKERFILE_PATH")"
-  --output "type=image,name=${DEST_IMAGE},push=true"
+echo "==> Kaniko build → ${DEST_IMAGE}"
+
+# Preparar argumentos de build para Kaniko
+KANIKO_ARGS=(
+  --dockerfile="${DOCKERFILE_PATH}"
+  --context="${CONTEXT}"
+  --destination="${DEST_IMAGE}"
+  --cache=false
 )
 
 # Build args: {"KEY":"VAL"}
 if [[ -n "${BUILD_ARGS_JSON:-}" ]]; then
+  echo "==> Configurando build args..."
   echo "$BUILD_ARGS_JSON" | jq -r 'to_entries[] | "\(.key)=\(.value)"' | \
   while IFS= read -r kv; do
-    BK_ARGS+=( --opt "build-arg:${kv}" )
+    KANIKO_ARGS+=( --build-arg "${kv}" )
   done
 fi
 
-# Iniciar buildkitd en segundo plano
-echo "==> Iniciando buildkitd..."
-mkdir -p /run/buildkit
-buildkitd &
-BUILDKITD_PID=$!
+# Ejecutar Kaniko (diseñado específicamente para containers sin privilegios)
+echo "==> Ejecutando build con Kaniko..."
+kaniko "${KANIKO_ARGS[@]}"
 
-# Esperar a que buildkitd esté listo
-echo "==> Esperando a que buildkitd esté listo..."
-for i in {1..30}; do
-  if buildctl debug workers >/dev/null 2>&1; then
-    echo "==> buildkitd está listo"
-    break
-  fi
-  echo "==> Esperando... ($i/30)"
-  sleep 1
-done
-
-# Verificar que buildkitd está funcionando
-if ! buildctl debug workers >/dev/null 2>&1; then
-  echo "ERROR: buildkitd no se inició correctamente"
-  kill $BUILDKITD_PID 2>/dev/null || true
-  exit 1
-fi
-
-# Ejecutar el build
-echo "==> Ejecutando build..."
-buildctl "${BK_ARGS[@]}"
-
-# Limpiar procesos
-echo "==> Limpiando..."
-kill $BUILDKITD_PID 2>/dev/null || true
 echo "==> OK. Image published: ${DEST_IMAGE}"
