@@ -40,6 +40,7 @@ inputs = {
   job_vcpu           = 2
   job_memory         = 4096
   vpc_id             = dependency.parameters.outputs.parameters["${local.base_path}/infra/vpc-id"]
+  job_command        = "/usr/local/bin/publish.sh"
   job_privileged     = true
   job_policy = jsonencode({
     "Version" : "2012-10-17",
