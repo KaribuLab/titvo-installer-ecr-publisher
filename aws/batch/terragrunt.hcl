@@ -17,14 +17,14 @@ dependency parameters {
   config_path = "${get_parent_terragrunt_dir()}/aws/ssm/lookup"
   mock_outputs = {
     parameters = {
-      "/tvo/security-scan/test/infra/ecr-registry-url"   = "vpc-000000000000000"
-      "/tvo/security-scan/test/infra/subnet1"            = "subnet-0c4b3b6b1b7b3b3b3"
-      "/tvo/security-scan/test/infra/ecr-repository-url" = "123456789012.dkr.ecr.us-east-1.amazonaws.com/titvo-installer-ecr-publisher"
-      "/tvo/security-scan/test/infra/ecr-repository-arn" = "arn:aws:ecr:us-east-1:123456789012:repository/titvo-installer-ecr-publisher"
-      "/tvo/security-scan/prod/infra/vpc-id"             = "vpc-000000000000000"
-      "/tvo/security-scan/prod/infra/subnet1"            = "subnet-0c4b3b6b1b7b3b3b3"
-      "/tvo/security-scan/prod/infra/ecr-registry-url"   = "123456789012.dkr.ecr.us-east-1.amazonaws.com"
-      "/tvo/security-scan/prod/infra/ecr-repository-arn" = "arn:aws:ecr:us-east-1:123456789012:repository/titvo-installer-ecr-publisher"
+      "/tvo/security-scan/test/infra/vpc-id"           = "vpc-000000000000000"
+      "/tvo/security-scan/test/infra/subnet1"          = "subnet-0c4b3b6b1b7b3b3b3"
+      "/tvo/security-scan/test/infra/ecr-registry-url" = "vpc-000000000000000"
+      "/tvo/security-scan/test/infra/ecr-registry-arn" = "arn:aws:ecr:us-east-1:123456789012:repository/titvo-installer-ecr-publisher"
+      "/tvo/security-scan/prod/infra/vpc-id"           = "vpc-000000000000000"
+      "/tvo/security-scan/prod/infra/subnet1"          = "subnet-0c4b3b6b1b7b3b3b3"
+      "/tvo/security-scan/prod/infra/ecr-registry-url" = "123456789012.dkr.ecr.us-east-1.amazonaws.com"
+      "/tvo/security-scan/prod/infra/ecr-registry-arn" = "arn:aws:ecr:us-east-1:123456789012:repository/titvo-installer-ecr-publisher"
     }
   }
 }
@@ -62,7 +62,7 @@ inputs = {
           "ecr:UploadLayerPart",
           "ecr:CompleteLayerUpload"
         ],
-        "Resource" : dependency.parameters.outputs.parameters["${local.base_path}/infra/ecr-repository-arn"]
+        "Resource" : dependency.parameters.outputs.parameters["${local.base_path}/infra/ecr-registry-arn"]
       }
     ]
   })
