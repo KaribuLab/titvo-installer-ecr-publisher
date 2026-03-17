@@ -3,10 +3,10 @@ terraform {
 }
 
 locals {
-  serverless     = read_terragrunt_config(find_in_parent_folders("serverless.hcl"))
-  batch_name     = "${local.serverless.locals.service_name}-batch-${local.serverless.locals.stage}"
-  common_tags    = local.serverless.locals.common_tags
-  base_path      = "${local.serverless.locals.parameter_path}/${local.serverless.locals.stage}"
+  serverless  = read_terragrunt_config(find_in_parent_folders("serverless.hcl"))
+  batch_name  = "${local.serverless.locals.service_name}-batch-${local.serverless.locals.stage}"
+  common_tags = local.serverless.locals.common_tags
+  base_path   = "${local.serverless.locals.parameter_path}/${local.serverless.locals.stage}"
 }
 
 include {
@@ -17,16 +17,16 @@ dependency parameters {
   config_path = "${get_parent_terragrunt_dir()}/aws/ssm/lookup"
   mock_outputs = {
     parameters = {
-      "/tvo/security-scan/test/infra/vpc/vpc_id"                    = "vpc-000000000000000"
-      "/tvo/security-scan/test/infra/vpc/subnet/private/subnets_id" = "subnet-0c4b3b6b1b7b3b3b3"
-      "/tvo/security-scan/prod/infra/vpc/vpc_id"                    = "vpc-000000000000000"
-      "/tvo/security-scan/prod/infra/vpc/subnet/private/subnets_id" = "subnet-0c4b3b6b1b7b3b3b3"
+      "/tvo/security-scan/test/infra/vpc/vpc_id"          = "vpc-000000000000000"
+      "/tvo/security-scan/test/infra/vpc/subnets/private" = "subnet-0c4b3b6b1b7b3b3b3"
+      "/tvo/security-scan/prod/infra/vpc/vpc_id"          = "vpc-000000000000000"
+      "/tvo/security-scan/prod/infra/vpc/subnets/private" = "subnet-0c4b3b6b1b7b3b3b3"
     }
   }
 }
 
 inputs = {
-  subnet_ids         = dependency.parameters.outputs.parameters["${local.base_path}/infra/vpc/subnet/private/subnets_id"],
+  subnet_ids         = dependency.parameters.outputs.parameters["${local.base_path}/infra/vpc/subnets/private"],
   name               = local.batch_name
   common_tags        = local.common_tags
   ecr_repository_url = "karibu/titvo-installer-ecr-publisher"
