@@ -10,48 +10,74 @@ GIT_REF=${GIT_REF:-main}
 CONTEXT_PATH=${CONTEXT_PATH:-.}
 DOCKERFILE=${DOCKERFILE:-Dockerfile}
 IMAGE_TAG=${IMAGE_TAG:-latest}
+DEBUG=${DEBUG:-false}
 
-echo "==> Params"
-echo "GIT_URL=${GIT_URL}"
-echo "IMAGE_REPO=${IMAGE_REPO}"
-echo "GIT_REF=${GIT_REF}"
-echo "CONTEXT_PATH=${CONTEXT_PATH}"
-echo "DOCKERFILE=${DOCKERFILE}"
-echo "IMAGE_TAG=${IMAGE_TAG}"
+log(){
+    local level=$1
+    local message=$2
+    echo "[$level]: ${message}"
+}
+
+log_debug(){
+    local message=$1
+    if [ "${DEBUG}" == "true" ]; then
+        log "DEBUG" "$message"
+    fi
+}
+
+log_info(){
+    local message=$1
+    log "INFO" "$message"
+}
+
+log_error(){
+    local message=$1
+    log "ERROR" "$message"
+}
+
+log_info "==> Params"
+log_info "GIT_URL=${GIT_URL}"
+log_info "IMAGE_REPO=${IMAGE_REPO}"
+log_info "GIT_REF=${GIT_REF}"
+log_info "CONTEXT_PATH=${CONTEXT_PATH}"
+log_info "DOCKERFILE=${DOCKERFILE}"
+log_info "IMAGE_TAG=${IMAGE_TAG}"
 
 if [[ -z "${GIT_URL:-}" || -z "${IMAGE_REPO:-}" ]]; then
-  echo "ERROR: GIT_URL e IMAGE_REPO are required." >&2
+  log_error "GIT_URL e IMAGE_REPO are required." >&2
   exit 2
 fi
 
-echo "==> Getting AWS Account ID"
+log_info "==> Getting AWS Account ID"
 
-ACCOUNT_ID=$(aws sts get-caller-identity --query Account --output text || echo "ERROR: AWS Account ID is required.")
+ACCOUNT_ID=$(aws sts get-caller-identity --query Account --output text || log_error "AWS Account ID is required.")
 REGISTRY_URL="${ACCOUNT_ID}.dkr.ecr.${REGION}.amazonaws.com"
 
 if [[ -z "${ACCOUNT_ID:-}" || -z "${REGION:-}" ]]; then
-  echo "ERROR: AWS Account ID and Region are required." >&2
+  log_error "AWS Account ID and Region are required." >&2
   exit 2
 fi
 
-echo "==> Registry"
-echo "ACCOUNT_ID=${ACCOUNT_ID}"
-echo "REGION=${REGION}"
-echo "REGISTRY_URL=${REGISTRY_URL}"
+log_info "==> Registry"
+log_info "ACCOUNT_ID=${ACCOUNT_ID}"
+log_info "REGION=${REGION}"
+log_info "REGISTRY_URL=${REGISTRY_URL}"
 
 WORK=/work
 SRC="$WORK/src"
 
-echo "==> Clonando repo"
+log_info "==> Clonando repo"
 git clone --depth 1 --branch "$GIT_REF" "$GIT_URL" "$SRC"
+
+log_debug "List of src files: $( ls -la $SRC )"
 
 CONTEXT="${SRC}/${CONTEXT_PATH}"
 DOCKERFILE_PATH="${CONTEXT}/${DOCKERFILE}"
-[[ -f "$DOCKERFILE_PATH" ]] || { echo "ERROR: $DOCKERFILE_PATH not found"; exit 5; }
+[[ -f "$DOCKERFILE_PATH" ]] || { log_error "$DOCKERFILE_PATH not found"; exit 5; }
 
 DEST_IMAGE="${REGISTRY_URL}/${IMAGE_REPO}:${IMAGE_TAG}"
 
-echo "==> Login to ECR: ${REGISTRY_URL} (region=${REGION})"
+log_info "==> Login to ECR: ${REGISTRY_URL} (region=${REGION})"
 # Crear directorio .docker si no existe
 mkdir -p ~/.docker
 
@@ -67,7 +93,7 @@ echo "{
 
 chmod 600 ~/.docker/config.json
 
-echo "==> Kaniko build → ${DEST_IMAGE}"
+log_info "==> Kaniko build → ${DEST_IMAGE}"
 
 # Preparar argumentos de build para Kaniko
 KANIKO_ARGS=(
@@ -79,7 +105,7 @@ KANIKO_ARGS=(
 
 # Build args: {"KEY":"VAL"}
 if [[ -n "${BUILD_ARGS_JSON:-}" ]]; then
-  echo "==> Configurando build args..."
+  log_info "==> Configurando build args..."
   echo "$BUILD_ARGS_JSON" | jq -r 'to_entries[] | "\(.key)=\(.value)"' | \
   while IFS= read -r kv; do
     KANIKO_ARGS+=( --build-arg "${kv}" )
@@ -87,7 +113,7 @@ if [[ -n "${BUILD_ARGS_JSON:-}" ]]; then
 fi
 
 # Ejecutar Kaniko (diseñado específicamente para containers sin privilegios)
-echo "==> Ejecutando build con Kaniko..."
+log_info "==> Ejecutando build con Kaniko..."
 kaniko "${KANIKO_ARGS[@]}"
 
-echo "==> OK. Image published: ${DEST_IMAGE}"
+log_info "==> OK. Image published: ${DEST_IMAGE}"
