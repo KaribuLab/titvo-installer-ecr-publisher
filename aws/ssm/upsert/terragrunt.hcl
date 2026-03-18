@@ -27,14 +27,14 @@ inputs = {
   tags           = local.common_tags
   parameters = [
     {
-      path        = "ecr-publisher-job-definition-arn"
+      path        = "ecr/publisher/job_definition_arn"
       type        = "String"
       tier        = "Standard"
       description = "Installer ECR Publisher Job Definition ARN"
       value       = join(":", slice(split(":", dependency.batch.outputs.job_definition_arn), 0, length(split(":", dependency.batch.outputs.job_definition_arn)) - 1))
     },
     {
-      path        = "ecr-publisher-job-queue-arn"
+      path        = "ecr/publisher/job_queue_arn"
       type        = "String"
       tier        = "Standard"
       description = "Installer ECR Publisher Job Queue ARN"
