@@ -52,6 +52,7 @@ inputs = {
           "ecr:GetDownloadUrlForLayer",
           "ecr:BatchGetImage",
           "ecr:DescribeRepositories",
+          "ecs:DescribeClusters",
           "ecr:DescribeImages",
           "ecr:PutImage",
           "ecr:InitiateLayerUpload",
