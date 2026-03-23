@@ -1,5 +1,5 @@
 # Usar imagen base de Kaniko que ya incluye el executor
-FROM gcr.io/kaniko-project/executor:v1.24.0 as kaniko
+FROM gcr.io/kaniko-project/executor:v1.24.0 AS kaniko
 
 # Imagen base para nuestro container
 FROM debian:bookworm-slim
