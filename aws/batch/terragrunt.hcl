@@ -23,7 +23,7 @@ dependency parameters {
       "/tvo/security-scan/prod/infra/vpc/subnets/private" = jsonencode(["subnet-0c4b3b6b1b7b3b3b3"])
     }
   }
-  mock_outputs_allowed_terraform_commands = ["validate", "plan"]
+  mock_outputs_allowed_terraform_commands = ["validate", "plan", "destroy"]
 }
 
 inputs = {
