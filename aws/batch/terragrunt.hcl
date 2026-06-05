@@ -18,11 +18,12 @@ dependency parameters {
   mock_outputs = {
     parameters = {
       "/tvo/security-scan/test/infra/vpc/vpc_id"          = "vpc-000000000000000"
-      "/tvo/security-scan/test/infra/vpc/subnets/private" = "subnet-0c4b3b6b1b7b3b3b3"
+      "/tvo/security-scan/test/infra/vpc/subnets/private" = jsonencode(["subnet-0c4b3b6b1b7b3b3b3"])
       "/tvo/security-scan/prod/infra/vpc/vpc_id"          = "vpc-000000000000000"
-      "/tvo/security-scan/prod/infra/vpc/subnets/private" = "subnet-0c4b3b6b1b7b3b3b3"
+      "/tvo/security-scan/prod/infra/vpc/subnets/private" = jsonencode(["subnet-0c4b3b6b1b7b3b3b3"])
     }
   }
+  mock_outputs_allowed_terraform_commands = ["validate", "plan"]
 }
 
 inputs = {
