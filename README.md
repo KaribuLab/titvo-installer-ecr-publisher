@@ -79,7 +79,13 @@ IMAGE_REPO=mi-aplicacion
 IMAGE_TAG=v1.0.0
 BUILD_ARGS_JSON={"NODE_ENV":"production","VERSION":"1.0.0"}
 EOF
+```
 
+## 🎮 Comandos para ejecutar el contenedor
+
+### Usando Docker directamente
+
+```bash
 # Ejecutar el contenedor
 docker run --rm --privileged --env-file=.env titvo-installer
 ```
